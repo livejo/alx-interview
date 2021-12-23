@@ -1,33 +1,26 @@
 #!/usr/bin/python3
-'''determines if a given data set represents a valid utf-8 encoding'''
+"""
+Validate UTF-8 Module
+"""
 
-def validateUTF8(data):
-    # number of bytes
-    numberOfBytes = 0
 
-    # looping through dataset
+def validUTF8(data):
+    """validate data if it is utf-8"""
+    state = 0
     for num in data:
-        # get binary representation
-        # get least significant 8-bits
-        binaryRepresentation = format(num, '#010b')[-8:]
-
-        # if no bytes then process new utf-8 character
-        if numberOfBytes == 0:
-            # get number of 1s at beginning of string
-            for bit in binaryRepresentation:
-                if bit == '0': break
-                numberOfBytes += 1
-
-            if numberOfBytes == 0:
-                continue
-
-            if numberOfBytes == 1 or numberOfBytes > 4:
+        bit = 0b10000000
+        if not state:
+            while (bit & num):
+                state += 1
+                bit >>= 1
+            if state > 4:
                 return False
-
-        else:
-            if not (binaryRepresentation[0] == '1' and binaryRepresentation[1] == '0'):
+            if state:
+                state -= 1
+                if state == 0:
+                    return False
+        elif state > 0:
+            if num >> 6 != 2:
                 return False
-
-        numberOfBytes -= 1
-
-    return numberOfBytes == 0
+            state -= 1
+    return not state
